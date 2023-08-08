@@ -1,5 +1,3 @@
-.org $8000
-
 ;;;;;;;;;;;;;;;;;;;;;;;
 ;; CONSTANTS GO HERE ;;
 ;;;;;;;;;;;;;;;;;;;;;;;
@@ -11,10 +9,26 @@ VERA_ADDR_BANK      = $9F22
 VERA_DATA1          = $9F24
 VERA_CTRL           = $9F25
 
+SCREEN_MODE         = $FF5F
+GRAPH_set_colors    = $FF29
+GRAPH_clear         = $FF23
+
 .segment "ONCE"
+    jmp start
 .segment "CODE"
 
 start:
+    lda #$80
+    clc
+    jsr SCREEN_MODE
+
+    lda #1
+    tax
+    ldy #4
+    jsr GRAPH_set_colors
+
+    jsr GRAPH_clear
+
     lda #%00000100           ; DCSEL=2, ADDRSEL=0
     sta VERA_CTRL
    
@@ -56,5 +70,10 @@ draw_line_next_pixel:
     dex
     bne draw_line_next_pixel
 
+    lda #%00000100           ; DCSEL=2, ADDRSEL=0
+    sta VERA_CTRL
+
+    stz $9f29                ; return the VERA to normal addressing
+    stz VERA_CTRL
 hang:
     jmp hang
